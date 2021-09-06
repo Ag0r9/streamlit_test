@@ -19,7 +19,11 @@ cookie_manager = stx.CookieManager()
 
 
 def get_cookie_if_not_none(cookie_name):
-    return cookie_manager.get(cookie_name) if cookie_manager.get(cookie_name) else 0
+    try:
+        value = cookie_manager.get(cookie_name)
+    except AttributeError:
+        value = 0
+    return value
 
 
 # data = load_data('train.csv')
