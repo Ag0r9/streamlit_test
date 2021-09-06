@@ -1,6 +1,7 @@
 import streamlit as st
 import extra_streamlit_components as stx
 import pandas as pd
+import matplotlib.pyplot as plt
 from sklearn.linear_model import LogisticRegression
 from sklearn import preprocessing
 
@@ -65,7 +66,11 @@ par_child = parents + children
 
 test = pd.DataFrame([[pclass, sex_index, age, sib_sp, par_child]], columns=['Pclass', 'Sex', 'Age', 'SibSp', 'Parch'])
 prediction = trained_model.predict_proba(test)
-prediction
+fig1, ax1 = plt.subplots()
+st.header('You would')
+ax1.pie(prediction[0], labels=['Die', 'Survive'], autopct='%1.1f%%', startangle=90, colors=['red', 'limegreen'])
+ax1.axis('equal')
+st.pyplot(fig1)
 
 cookie_manager.set('pclass', pclass, key=10)
 cookie_manager.set('sex', sex, key=11)
