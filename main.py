@@ -2,17 +2,19 @@ import streamlit as st
 import extra_streamlit_components as stx
 import pandas as pd
 from sklearn.linear_model import LogisticRegression
+from sklearn import preprocessing
 
 
 @st.cache
 def load_data(data_name):
     return pd.read_csv(data_name)
 
-    # @st.cache
-    # def train_model(features, labels):
-    #     model = LogisticRegression()
-    #     model.fit(features, labels)
-    #     return model
+
+@st.cache
+def train_model(features, labels):
+    model = LogisticRegression()
+    model.fit(features, labels)
+    return model
 
 
 cookie_manager = stx.CookieManager()
@@ -26,10 +28,12 @@ def get_cookie_if_not_none(cookie_name):
     return value
 
 
-# data = load_data('train.csv')
-# x_train = data[['Pclass', 'Sex', 'Age', 'SibSp', 'Parch']]
-# y_train = data['Survived']
-# model = train_model(x_train, y_train)
+data = load_data('train.csv').dropna()
+x_train = data[['Pclass', 'Sex', 'Age', 'SibSp', 'Parch']]
+label_encoder = preprocessing.LabelEncoder()
+x_train.loc[:, 'Sex'] = label_encoder.fit_transform(x_train['Sex'])  # female - 0, male - 1
+y_train = data[['Survived']]
+trained_model = train_model(x_train, y_train)
 
 pclass = get_cookie_if_not_none('pclass')
 sex = get_cookie_if_not_none('sex')
@@ -46,6 +50,7 @@ st.image('assets/background.jpg', use_column_width=True)
 st.sidebar.subheader('Write Data')
 age = st.sidebar.slider('Enter an age', min_value=0, max_value=100, step=1)
 sex = st.sidebar.radio('Sex', options=sexes)
+sex_index = sexes.index(sex)
 pclass = st.sidebar.selectbox('Select ticket class', options=pclasses, index=0)
 siblings = st.sidebar.number_input('How many siblings would you take with you?', min_value=0, max_value=20,
                                    step=1)
@@ -58,13 +63,9 @@ children = st.sidebar.number_input('How many children would you take with you?',
                                    step=1)
 par_child = parents + children
 
-# test = pd.DataFrame({'Pclass': pclass,
-#                      'Sex': sex,
-#                      'Age': age,
-#                      'SibSp': sib_sp,
-#                      'Parch': par_child})
-# test
-# prediction = model.predict_proba(test)
+test = pd.DataFrame([[pclass, sex_index, age, sib_sp, par_child]], columns=['Pclass', 'Sex', 'Age', 'SibSp', 'Parch'])
+prediction = trained_model.predict_proba(test)
+prediction
 
 cookie_manager.set('pclass', pclass, key=10)
 cookie_manager.set('sex', sex, key=11)
